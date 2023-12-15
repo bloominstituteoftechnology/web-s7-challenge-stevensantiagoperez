@@ -29,6 +29,7 @@ export default function Form() {
   });
 
   const [errors, setErrors] = useState({});
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -57,12 +58,8 @@ export default function Form() {
       } is on the way.`;
       console.log(successMessage);
 
-      // Update state to trigger success message
-      setFormData({
-        fullName: '',
-        size: '',
-        toppings: [],
-      });
+      // Show success message indefinitely
+      setShowSuccessMessage(true);
     } catch (validationError) {
       // If validation fails, update errors state
       const newErrors = {};
@@ -70,6 +67,9 @@ export default function Form() {
         newErrors[error.path] = error.message;
       });
       setErrors(newErrors);
+
+      // Hide success message
+      setShowSuccessMessage(false);
     }
   };
 
@@ -77,7 +77,7 @@ export default function Form() {
     <form onSubmit={onSubmit}>
       <h2>Order Your Pizza</h2>
       {/* Display success or failure message based on form submission */}
-      {Object.keys(errors).length === 0 && (
+      {showSuccessMessage && (
         <div className='success'>
           Thank you for your order, {formData.fullName}! Your {formData.size} pizza{' '}
           {formData.toppings && formData.toppings.length > 0
