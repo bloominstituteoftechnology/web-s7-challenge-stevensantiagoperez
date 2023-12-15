@@ -93,20 +93,16 @@ export default function Form() {
       // Hide success message
       setShowSuccessMessage(false);
     }
-  
-    // If validation fails or an error occurs, the form submission continues here
-    // Add any additional logic for handling the form submission in this section
   };
-  
 
   return (
     <form onSubmit={onSubmit}>
       <h2>Order Your Pizza</h2>
       {/* Display success or failure message based on form submission */}
       {showSuccessMessage && (
-      <div className='success'>
-        {showSuccessMessage} {/* Updated line */}
-      </div>
+        <div className='success'>
+          {showSuccessMessage}
+        </div>
       )}
       {Object.keys(errors).length > 0 && <div className='failure'>Something went wrong</div>}
 
@@ -129,8 +125,8 @@ export default function Form() {
             <option value='M'>Medium</option>
             <option value='L'>Large</option>
           </select>
+          {errors.size && <div className='error'>{errors.size}</div>}
         </div>
-        {errors.size && <div className='error'>{errors.size}</div>}
       </div>
 
       <div className='input-group'>
