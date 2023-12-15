@@ -40,51 +40,73 @@ export default function Form() {
     }));
   };
 
+  const getSizeText = (size) => {
+    const sizeMap = {
+      S: 'small',
+      M: 'medium',
+      L: 'large',
+    };
+    return sizeMap[size] || size;
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
-
-    // Validate form data using Yup
+  
     try {
+      // Validate form data using Yup
       await schema.validate(formData, { abortEarly: false });
-
+  
       // If validation successful, reset errors
       setErrors({});
-
+  
       // Customize success message based on form data
-      const successMessage = `Thank you for your order, ${formData.fullName}! Your ${formData.size} pizza ${
-        formData.toppings && formData.toppings.length > 0
-          ? `with ${formData.toppings.length} topping${formData.toppings.length > 1 ? 's' : ''}: ${formData.toppings.join(', ')}`
-          : 'with no toppings'
-      } is on the way.`;
-      console.log(successMessage);
-
-      // Show success message indefinitely
-      setShowSuccessMessage(true);
-    } catch (validationError) {
-      // If validation fails, update errors state
-      const newErrors = {};
-      validationError.inner.forEach((error) => {
-        newErrors[error.path] = error.message;
+      const sizeText = getSizeText(formData.size);
+      const toppingsText = formData.toppings.length > 0
+        ? `with ${formData.toppings.length} topping${formData.toppings.length > 1 ? 's' : ''}`
+        : 'with no toppings';
+  
+      const successMessage = `Thank you for your order, ${formData.fullName || 'Customer'}! Your ${sizeText} pizza ${toppingsText} is on the way.`;
+  
+      // Reset form data
+      setFormData({
+        fullName: '',
+        size: '',
+        toppings: [],
       });
-      setErrors(newErrors);
-
+  
+      // Show success message
+      setShowSuccessMessage(successMessage);
+  
+    } catch (validationError) {
+      if (validationError instanceof yup.ValidationError) {
+        // If Yup validation error, update errors state
+        const newErrors = {};
+        validationError.inner.forEach((error) => {
+          newErrors[error.path] = error.message;
+        });
+        setErrors(newErrors);
+      } else {
+        // Handle other types of errors if necessary
+        console.error(validationError);
+      }
+  
       // Hide success message
       setShowSuccessMessage(false);
     }
+  
+    // If validation fails or an error occurs, the form submission continues here
+    // Add any additional logic for handling the form submission in this section
   };
+  
 
   return (
     <form onSubmit={onSubmit}>
       <h2>Order Your Pizza</h2>
       {/* Display success or failure message based on form submission */}
       {showSuccessMessage && (
-        <div className='success'>
-          Thank you for your order, {formData.fullName}! Your {formData.size} pizza{' '}
-          {formData.toppings && formData.toppings.length > 0
-            ? `with ${formData.toppings.length} topping${formData.toppings.length > 1 ? 's' : ''}: ${formData.toppings.join(', ')}`
-            : 'with no toppings'
-          } is on the way.
-        </div>
+      <div className='success'>
+        {showSuccessMessage} {/* Updated line */}
+      </div>
       )}
       {Object.keys(errors).length > 0 && <div className='failure'>Something went wrong</div>}
 
