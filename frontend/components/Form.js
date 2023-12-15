@@ -59,24 +59,59 @@ export default function Form() {
       // If validation successful, reset errors
       setErrors({});
   
-      // Customize success message based on form data
-      const sizeText = getSizeText(formData.size);
-      const toppingsText = formData.toppings.length > 0
-        ? `with ${formData.toppings.length} topping${formData.toppings.length > 1 ? 's' : ''}`
-        : 'with no toppings';
-  
-      const successMessage = `Thank you for your order, ${formData.fullName || 'Customer'}! Your ${sizeText} pizza ${toppingsText} is on the way.`;
-  
-      // Reset form data
-      setFormData({
-        fullName: '',
-        size: '',
-        toppings: [],
+      // Map selected toppings to their corresponding IDs
+      const selectedToppings = formData.toppings.map((toppingText) => {
+        const topping = toppings.find((t) => t.text === toppingText);
+        return topping ? topping.topping_id : null;
       });
   
-      // Show success message
-      setShowSuccessMessage(successMessage);
+      // Remove null values (in case a topping text doesn't have a corresponding ID)
+      const sanitizedToppings = selectedToppings.filter((id) => id !== null);
   
+      // Prepare payload for the POST request
+      const payload = {
+        fullName: formData.fullName,
+        size: formData.size,
+        toppings: sanitizedToppings,
+      };
+  
+      // Make a POST request to the API endpoint
+      const response = await fetch('http://localhost:9009/api/order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      // Check if the request was successful (you might need to adjust this based on your API)
+      if (response.ok) {
+        // Customize success message based on form data
+        const sizeText = getSizeText(formData.size);
+        const toppingsText = sanitizedToppings.length > 0
+          ? `with ${sanitizedToppings.length} topping${sanitizedToppings.length > 1 ? 's' : ''}`
+          : 'with no toppings';
+  
+        const successMessage = `Thank you for your order, ${formData.fullName || 'Customer'}! Your ${sizeText} pizza ${toppingsText} is on the way.`;
+  
+        // Reset form data
+        setFormData({
+          fullName: '',
+          size: '',
+          toppings: [],
+        });
+  
+        // Show success message
+        setShowSuccessMessage(successMessage);
+      } else {
+        // Handle error response from the server
+        console.error('Failed to submit order:', response.statusText);
+  
+        // Display a generic error message
+        setShowSuccessMessage('Something went wrong. Please try again later.');
+  
+        // You might want to handle errors in a more user-friendly way based on your application's requirements
+      }
     } catch (validationError) {
       if (validationError instanceof yup.ValidationError) {
         // If Yup validation error, update errors state
@@ -94,6 +129,7 @@ export default function Form() {
       setShowSuccessMessage(false);
     }
   };
+  
 
   return (
     <form onSubmit={onSubmit}>
