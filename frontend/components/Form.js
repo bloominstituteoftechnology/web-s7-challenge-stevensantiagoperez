@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as yup from 'yup';
 
 const validationErrors = {
@@ -30,6 +30,7 @@ export default function Form() {
 
   const [errors, setErrors] = useState({});
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false); // New state to track form validity
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -49,10 +50,37 @@ export default function Form() {
     return sizeMap[size] || size;
   };
 
+  const validateForm = async () => {
+    try {
+      await schema.validate(formData, { abortEarly: false });
+      setErrors({});
+      setIsFormValid(true);
+    } catch (validationError) {
+      if (validationError instanceof yup.ValidationError) {
+        const newErrors = {};
+        validationError.inner.forEach((error) => {
+          newErrors[error.path] = error.message;
+        });
+        setErrors(newErrors);
+        setIsFormValid(false);
+      } else {
+        console.error(validationError);
+      }
+    }
+  };
+
+  useEffect(() => {
+    validateForm();
+  }, [formData]);
+
+
+
   const onSubmit = async (e) => {
     e.preventDefault();
   
     try {
+      await validateForm();
+
       // Validate form data using Yup
       await schema.validate(formData, { abortEarly: false });
   
@@ -120,6 +148,7 @@ export default function Form() {
           newErrors[error.path] = error.message;
         });
         setErrors(newErrors);
+        console.error(validationError);
       } else {
         // Handle other types of errors if necessary
         console.error(validationError);
@@ -177,7 +206,7 @@ export default function Form() {
         {errors.toppings && <div className='error'>{errors.toppings}</div>}
       </div>
       {/* Make sure the submit stays disabled until the form validates */}
-      <input disabled={Object.keys(errors).length > 0} type='submit' />
+      <input disabled={!isFormValid} type='submit' />
     </form>
   );
 }
