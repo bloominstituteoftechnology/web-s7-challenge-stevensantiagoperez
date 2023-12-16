@@ -4,12 +4,17 @@ import * as yup from 'yup';
 const validationErrors = {
   fullNameTooShort: 'Full name must be at least 3 characters',
   fullNameTooLong: 'Full name must be at most 20 characters',
-  sizeIncorrect: 'Size must be S, M, or L',
 };
 
 const schema = yup.object().shape({
-  fullName: yup.string().min(3, validationErrors.fullNameTooShort).max(20, validationErrors.fullNameTooLong).required('Full name is required'),
-  size: yup.string().matches(/^[SML]$/, validationErrors.sizeIncorrect).required('Size is required'),
+  fullName: yup
+    .string()
+    .trim()
+    .required('Full name is required')
+    .matches(/^\s*\S+\s*$/, 'Full name must not be empty or contain only whitespace') // Ensure not empty or whitespace
+    .min(3, validationErrors.fullNameTooShort)
+    .max(20, validationErrors.fullNameTooLong),
+  size: yup.string(),
   toppings: yup.array(),
 });
 
@@ -34,11 +39,20 @@ export default function Form() {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-
+  
     setFormData((prevData) => ({
       ...prevData,
-      [name]: type === 'checkbox' ? (checked ? [...prevData[name], value] : prevData[name].filter((item) => item !== value)) : value,
+      [name]: type === 'checkbox'
+        ? (checked
+          ? [...prevData[name], value]
+          : prevData[name].filter((item) => item !== value))
+        : value,
     }));
+  
+    // Trigger validation only when changing 'fullName' or 'size'
+    if (name === 'fullName' || name === 'size') {
+      validateForm();
+    }
   };
 
   const getSizeText = (size) => {
@@ -55,6 +69,7 @@ export default function Form() {
       await schema.validate(formData, { abortEarly: false });
       setErrors({});
       setIsFormValid(true);
+      setShowSuccessMessage('');
     } catch (validationError) {
       if (validationError instanceof yup.ValidationError) {
         const newErrors = {};
@@ -65,7 +80,16 @@ export default function Form() {
         setIsFormValid(false);
       } else {
         console.error(validationError);
+        // Assuming server-side error, clear validation errors and set generic error
+        // Only set "Something went wrong" for server-side errors
+        setShowSuccessMessage('Something went wrong. Please try again later.');
+        setIsFormValid(false);
       }
+    }
+  
+    // Ensure the form is disabled if either 'fullName' or 'size' is invalid
+    if (!formData.fullName || !formData.size) {
+      setIsFormValid(false);
     }
   };
 
@@ -80,7 +104,7 @@ export default function Form() {
   
     try {
       await validateForm();
-
+  
       // Validate form data using Yup
       await schema.validate(formData, { abortEarly: false });
   
@@ -116,9 +140,10 @@ export default function Form() {
       if (response.ok) {
         // Customize success message based on form data
         const sizeText = getSizeText(formData.size);
-        const toppingsText = sanitizedToppings.length > 0
-          ? `with ${sanitizedToppings.length} topping${sanitizedToppings.length > 1 ? 's' : ''}`
-          : 'with no toppings';
+        const toppingsText =
+          sanitizedToppings.length > 0
+            ? `with ${sanitizedToppings.length} topping${sanitizedToppings.length > 1 ? 's' : ''}`
+            : 'with no toppings';
   
         const successMessage = `Thank you for your order, ${formData.fullName || 'Customer'}! Your ${sizeText} pizza ${toppingsText} is on the way.`;
   
