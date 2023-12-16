@@ -184,7 +184,6 @@ describe('Sprint 7 Challenge Codegrade Tests', () => {
     })
     test('[10] Validation of `fullName` renders correct error message', async () => {
       const validationError = 'full name must be at least 3 characters'
-
       await waitFor(() => {
         fireEvent.change(name, { target: { value: '1' } }) // BAD VALUE
       }, waitForOptions)
