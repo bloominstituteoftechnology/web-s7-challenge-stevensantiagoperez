@@ -4,6 +4,7 @@ import * as yup from 'yup';
 const validationErrors = {
   fullNameTooShort: 'Full name must be at least 3 characters',
   fullNameTooLong: 'Full name must be at most 20 characters',
+  sizeInvalid: 'Size must be S, M, or L',
 };
 
 const schema = yup.object().shape({
@@ -14,7 +15,10 @@ const schema = yup.object().shape({
     .matches(/^\s*\S+\s*$/, 'Full name must not be empty or contain only whitespace') // Ensure not empty or whitespace
     .min(3, validationErrors.fullNameTooShort)
     .max(20, validationErrors.fullNameTooLong),
-  size: yup.string(),
+    size: yup
+    .string()
+    .required('Size is required')
+    .oneOf(['S', 'M', 'L'], 'Size must be S or M or L'),
   toppings: yup.array(),
 });
 
@@ -36,6 +40,7 @@ export default function Form() {
   const [errors, setErrors] = useState({});
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false); // New state to track form validity
+  
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
