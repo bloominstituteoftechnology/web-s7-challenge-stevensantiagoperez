@@ -16,7 +16,7 @@ mvpA.test.js
 import React from 'react'
 import App from './frontend/components/App'
 import { BrowserRouter as Router } from 'react-router-dom'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import server from './backend/mock-server'
 
@@ -60,16 +60,17 @@ describe('Sprint 7 Challenge Codegrade Tests', () => {
       expect(document.location.pathname).toBe('/order')
     })
   })
-  let name, size, pepperoni, peppers, pineapple, mushrooms, ham, submit
+  let name, size, pepperoni, peppers, pineapple, mushrooms, ham, submit;
+
   function getFormElements() {
-    name = document.querySelector('#fullName')
-    size = document.querySelector('#size')
-    pepperoni = document.querySelectorAll('input[type=checkbox]')[0]
-    peppers = document.querySelectorAll('input[type=checkbox]')[1]
-    pineapple = document.querySelectorAll('input[type=checkbox]')[2]
-    mushrooms = document.querySelectorAll('input[type=checkbox]')[3]
-    ham = document.querySelectorAll('input[type=checkbox]')[4]
-    submit = document.querySelector('input[type=submit]')
+    name = screen.getByLabelText('Full Name');
+    size = screen.getByLabelText('Size');
+    pepperoni = screen.getByLabelText('Pepperoni');
+    peppers = screen.getByLabelText('Green Peppers');
+    pineapple = screen.getByLabelText('Pineapple');
+    mushrooms = screen.getByLabelText('Mushrooms');
+    ham = screen.getByLabelText('Ham');
+    submit = screen.getByRole('button', { name: 'Submit' });
   }
   function getValues() { // eslint-disable-line
     return {

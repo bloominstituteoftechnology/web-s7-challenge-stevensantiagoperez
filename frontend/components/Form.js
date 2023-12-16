@@ -143,19 +143,19 @@ export default function Form() {
       {Object.keys(errors).length > 0 && <div className='failure'>Something went wrong</div>}
 
       <div className='input-group'>
-        <div>
-          <label htmlFor='fullName'>Full Name</label>
-          <br />
-          <input name='fullName' value={formData.fullName} onChange={handleInputChange} placeholder='Type full name' type='text' />
-          {errors.fullName && <div className='error'>{errors.fullName}</div>}
-        </div>
+      <div>
+        <label htmlFor='fullName'>Full Name</label>
+        <br />
+        <input id='fullName' name='fullName' value={formData.fullName} onChange={handleInputChange} placeholder='Type full name' type='text' />
+        {errors.fullName && <div className='error'>{errors.fullName}</div>}
+      </div>
       </div>
 
       <div className='input-group'>
         <div>
           <label htmlFor='size'>Size</label>
           <br />
-          <select name='size' value={formData.size} onChange={handleInputChange}>
+          <select id='size' name='size' value={formData.size} onChange={handleInputChange}>
             <option value=''>----Choose Size----</option>
             <option value='S'>Small</option>
             <option value='M'>Medium</option>
